@@ -24,7 +24,7 @@ import static org.hamcrest.Matchers.is;
  * IT for hosted raw repositories
  */
 public class RawHostedIT
-    extends RepositoryTestSupport
+    extends RawITSupport
 {
   public static final String HOSTED_REPO = "raw-test-hosted";
 
@@ -34,7 +34,7 @@ public class RawHostedIT
   public void createHostedRepository() throws Exception {
     final Configuration config = hostedConfig(HOSTED_REPO);
     final Repository repository = createRepository(config);
-    URL hostedRepoUrl = this.repositoryBaseUrl(repository);
+    URL hostedRepoUrl = repositoryBaseUrl(repository);
     rawClient = new RawClient(clientBuilder().build(), clientContext(), hostedRepoUrl.toURI());
   }
 

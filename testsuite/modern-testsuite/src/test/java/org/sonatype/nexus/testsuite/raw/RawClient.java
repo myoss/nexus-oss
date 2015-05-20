@@ -17,7 +17,6 @@ import org.apache.http.util.EntityUtils;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-
 /**
  * A simple test client for Raw repositories.
  */
