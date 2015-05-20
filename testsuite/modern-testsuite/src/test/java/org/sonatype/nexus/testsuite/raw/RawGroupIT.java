@@ -21,9 +21,10 @@ import static org.hamcrest.Matchers.is;
  * IT for hosted raw repositories
  */
 @ExamReactorStrategy(PerClass.class)
-public class RawProxyOfHostedIT
+public class RawGroupIT
     extends RawITSupport
 {
+
   public static final String TEST_PATH = "alphabet.txt";
 
   public static final String TEST_CONTENT = "alphabet.txt";
@@ -39,9 +40,10 @@ public class RawProxyOfHostedIT
   @Before
   public void createHostedRepository() throws Exception {
     hostedRepo = createRepository(hostedConfig("raw-test-hosted"));
+    URL hostedRepoUrl = repositoryBaseUrl(hostedRepo);
+    Repository hostedRepo = this.hostedRepo;
     hostedClient = client(hostedRepo);
 
-    URL hostedRepoUrl = repositoryBaseUrl(hostedRepo);
     final Configuration proxyConfig = proxyConfig("raw-test-proxy", hostedRepoUrl.toExternalForm());
     proxyRepo = createRepository(proxyConfig);
     proxyClient = client(proxyRepo);
@@ -65,6 +67,8 @@ public class RawProxyOfHostedIT
   public void fetchFromRemote() throws Exception {
     final File testFile = resolveTestFile(TEST_CONTENT);
     hostedClient.put(TEST_PATH, testFile);
+
+    final HttpResponse httpResponse = proxyClient.get(TEST_PATH);
 
     final byte[] bytes = proxyClient.getBytes(TEST_PATH);
     assertThat(bytes, is(Files.toByteArray(testFile)));

@@ -1,16 +1,13 @@
 package org.sonatype.nexus.testsuite.raw;
 
 import java.io.File;
-import java.net.URL;
 
 import org.sonatype.nexus.repository.Repository;
 import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.http.HttpStatus;
 import org.sonatype.nexus.repository.raw.internal.RawHostedRecipe;
 import org.sonatype.nexus.repository.storage.WritePolicy;
-import org.sonatype.nexus.testsuite.repository.RepositoryTestSupport;
 
-import com.google.common.base.Charsets;
 import com.google.common.io.Files;
 import org.apache.http.HttpResponse;
 import org.jetbrains.annotations.NotNull;
@@ -34,8 +31,7 @@ public class RawHostedIT
   public void createHostedRepository() throws Exception {
     final Configuration config = hostedConfig(HOSTED_REPO);
     final Repository repository = createRepository(config);
-    URL hostedRepoUrl = repositoryBaseUrl(repository);
-    rawClient = new RawClient(clientBuilder().build(), clientContext(), hostedRepoUrl.toURI());
+    rawClient = client(repository);
   }
 
   @Test
