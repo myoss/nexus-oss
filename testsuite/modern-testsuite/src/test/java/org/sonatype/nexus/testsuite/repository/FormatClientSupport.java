@@ -12,6 +12,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.util.EntityUtils;
+import org.jetbrains.annotations.NotNull;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -50,14 +51,20 @@ public class FormatClientSupport
    * GET a response from the repository.
    */
   public HttpResponse get(final String path) throws IOException {
-    final HttpGet get = new HttpGet(repositoryBaseUri.resolve(path));
+    final URI uri = resolve(path);
+    final HttpGet get = new HttpGet(uri);
     return execute(get);
   }
 
+  @NotNull
+  protected URI resolve(final String path) {
+    return repositoryBaseUri.resolve(path);
+  }
+
   protected HttpResponse execute(final HttpUriRequest request) throws IOException {
-    log.info("Nuget client requesting {}", request);
+    log.info("Requesting {}", request);
     final HttpResponse response = httpClient.execute(request, httpClientContext);
-    log.info("Nuget client received {}", response);
+    log.info("Received {}", response);
     return response;
   }
 }

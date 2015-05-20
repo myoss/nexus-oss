@@ -51,7 +51,7 @@ public class RawClient
   }
 
   public int delete(final String path) throws Exception {
-    final HttpResponse response = execute(new HttpDelete(path));
+    final HttpResponse response = execute(new HttpDelete(resolve(path)));
     return response.getStatusLine().getStatusCode();
   }
 }

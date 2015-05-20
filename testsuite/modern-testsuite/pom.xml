@@ -69,7 +69,7 @@
       <artifactId>nexus-repository-maven</artifactId>
       <scope>test</scope>
     </dependency>
-    
+
     <dependency>
       <groupId>org.sonatype.nexus.plugins</groupId>
       <artifactId>nexus-repository-nuget</artifactId>
