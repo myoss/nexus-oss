@@ -10,11 +10,10 @@
  * of Sonatype, Inc. Apache Maven is a trademark of the Apache Software Foundation. M2eclipse is a trademark of the
  * Eclipse Foundation. All other trademarks are the property of their respective owners.
  */
-package org.sonatype.nexus.repository.storage;
+package org.sonatype.nexus.repository.maven.internal.maven2;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -22,9 +21,10 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Singleton;
 
-import org.sonatype.nexus.mime.MimeSupport;
 import org.sonatype.nexus.repository.InvalidContentException;
-import org.sonatype.nexus.repository.view.ContentTypes;
+import org.sonatype.nexus.repository.maven.internal.DigestExtractor;
+import org.sonatype.nexus.repository.storage.ContentValidator;
+import org.sonatype.nexus.repository.storage.DefaultContentValidator;
 import org.sonatype.sisu.goodies.common.ComponentSupport;
 
 import com.google.common.base.Supplier;
@@ -32,23 +32,22 @@ import com.google.common.base.Supplier;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * Default {@link ContentValidator}.
+ * Maven 2 specific {@link ContentValidator}, that differs from {@link DefaultContentValidator} only by how XML files
+ * are validated.
  *
  * @since 3.0
  */
-@Named(DefaultContentValidator.NAME)
+@Named(Maven2Format.NAME)
 @Singleton
-public class DefaultContentValidator
+public class Maven2ContentValidator
     extends ComponentSupport
     implements ContentValidator
 {
-  public static final String NAME = "default";
-
-  private final MimeSupport mimeSupport;
+  private final DefaultContentValidator defaultContentValidator;
 
   @Inject
-  public DefaultContentValidator(final MimeSupport mimeSupport) {
-    this.mimeSupport = checkNotNull(mimeSupport);
+  public Maven2ContentValidator(final DefaultContentValidator defaultContentValidator) {
+    this.defaultContentValidator = checkNotNull(defaultContentValidator);
   }
 
   @Nonnull
@@ -58,35 +57,22 @@ public class DefaultContentValidator
                                      String contentNameHint,
                                      @Nullable String declaredContentType) throws IOException
   {
-    checkNotNull(contentSupplier);
-    String contentType = declaredContentType;
-
-    if (contentType == null) {
-      log.trace("Content {} has no declared content type.", contentNameHint);
-      try (InputStream is = contentSupplier.get()) {
-        contentType = mimeSupport.detectMimeType(is, contentNameHint);
-      }
-      log.trace("Mime support implies content type {}", contentType);
-
-      if (contentType == null && strictContentTypeValidation) {
-        throw new InvalidContentException("Content type could not be determined.");
-      }
+    if (contentNameHint.endsWith(".pom")) {
+      // hint to MimeSupport it's actually XML file
+      return defaultContentValidator
+          .determineContentType(strictContentTypeValidation, contentSupplier, contentNameHint + ".xml",
+              declaredContentType);
     }
-    else {
+    else if (contentNameHint.endsWith(".sha1") || contentNameHint.endsWith(".md5")) {
       try (InputStream is = contentSupplier.get()) {
-        final List<String> types = mimeSupport.detectMimeTypes(is, contentNameHint);
-        if (!types.isEmpty() && !types.contains(contentType)) {
-          log.debug("Discovered content type {} ", types);
-          if (strictContentTypeValidation) {
-            throw new InvalidContentException(
-                String.format("Declared content type %s, but discovered %s.", contentType, types));
-          }
+        final String digestCandidate = DigestExtractor.extract(is);
+        if (!DigestExtractor.isDigest(digestCandidate)) {
+          throw new InvalidContentException("Not a Maven digest");
         }
       }
     }
-    if (contentType == null) {
-      contentType = ContentTypes.OCTET_STREAM;
-    }
-    return contentType;
+    return defaultContentValidator.determineContentType(
+        strictContentTypeValidation, contentSupplier, contentNameHint, declaredContentType
+    );
   }
 }
