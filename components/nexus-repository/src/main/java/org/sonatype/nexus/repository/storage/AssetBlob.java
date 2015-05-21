@@ -56,7 +56,7 @@ public class AssetBlob
   /**
    * Returns {@code true} if this instance is attached to an {@link Asset}. If {@code false} returned, the blob
    * referenced by this instance is considered "orphan" and will be deleted at the end of TX (whatever outcome is,
-   * commit or rollback).
+   * commit or rollback) if not attached until the end of TX.
    */
   boolean isAttached() {
     return attached;
