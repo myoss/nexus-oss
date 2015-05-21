@@ -66,7 +66,7 @@ public class Maven2ContentValidator
     else if (contentNameHint.endsWith(".sha1") || contentNameHint.endsWith(".md5")) {
       try (InputStream is = contentSupplier.get()) {
         final String digestCandidate = DigestExtractor.extract(is);
-        if (!DigestExtractor.isDigest(digestCandidate)) {
+        if (digestCandidate == null || !DigestExtractor.isDigest(digestCandidate)) {
           throw new InvalidContentException("Not a Maven digest");
         }
       }
