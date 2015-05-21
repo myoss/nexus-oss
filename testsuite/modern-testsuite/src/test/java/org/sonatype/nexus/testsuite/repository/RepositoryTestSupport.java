@@ -32,6 +32,7 @@ public abstract class RepositoryTestSupport
     waitFor(responseFrom(nexusUrl));
     final Repository repository = repositoryManager.create(config);
     repositories.add(repository);
+    calmPeriod();
     return repository;
   }
 

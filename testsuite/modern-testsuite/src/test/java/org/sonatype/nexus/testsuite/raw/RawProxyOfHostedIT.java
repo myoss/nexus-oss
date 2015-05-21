@@ -18,7 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 /**
- * IT for hosted raw repositories
+ * IT for proxy raw repositories
  */
 @ExamReactorStrategy(PerClass.class)
 public class RawProxyOfHostedIT
@@ -34,17 +34,14 @@ public class RawProxyOfHostedIT
 
   private Repository hostedRepo;
 
-  private Repository proxyRepo;
-
   @Before
-  public void createHostedRepository() throws Exception {
+  public void setUpRepositories() throws Exception {
     hostedRepo = createRepository(hostedConfig("raw-test-hosted"));
     hostedClient = client(hostedRepo);
 
     URL hostedRepoUrl = repositoryBaseUrl(hostedRepo);
     final Configuration proxyConfig = proxyConfig("raw-test-proxy", hostedRepoUrl.toExternalForm());
-    proxyRepo = createRepository(proxyConfig);
-    proxyClient = client(proxyRepo);
+    proxyClient = client(createRepository(proxyConfig));
   }
 
   @Test

@@ -1,10 +1,7 @@
 package org.sonatype.nexus.testsuite.raw;
 
 import java.io.File;
-import java.net.URL;
 
-import org.sonatype.nexus.repository.Repository;
-import org.sonatype.nexus.repository.config.Configuration;
 import org.sonatype.nexus.repository.http.HttpStatus;
 
 import com.google.common.io.Files;
@@ -18,72 +15,62 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 /**
- * IT for hosted raw repositories
+ * IT for group raw repositories
  */
 @ExamReactorStrategy(PerClass.class)
 public class RawGroupIT
     extends RawITSupport
 {
-
   public static final String TEST_PATH = "alphabet.txt";
 
   public static final String TEST_CONTENT = "alphabet.txt";
 
-  private RawClient hostedClient;
+  public static final String TEST_CONTENT2 = "alphabet2.txt";
 
-  private RawClient proxyClient;
+  private RawClient hosted1;
 
-  private Repository hostedRepo;
+  private RawClient hosted2;
 
-  private Repository proxyRepo;
+  private RawClient groupClient;
 
   @Before
-  public void createHostedRepository() throws Exception {
-    hostedRepo = createRepository(hostedConfig("raw-test-hosted"));
-    URL hostedRepoUrl = repositoryBaseUrl(hostedRepo);
-    Repository hostedRepo = this.hostedRepo;
-    hostedClient = client(hostedRepo);
+  public void setUpRepositories() throws Exception {
+    hosted1 = client(createRepository(hostedConfig("raw-hosted-test1")));
+    hosted2 = client(createRepository(hostedConfig("raw-hosted-test2")));
 
-    final Configuration proxyConfig = proxyConfig("raw-test-proxy", hostedRepoUrl.toExternalForm());
-    proxyRepo = createRepository(proxyConfig);
-    proxyClient = client(proxyRepo);
+    groupClient = client(createRepository(groupConfig("raw-group", "raw-hosted-test1", "raw-hosted-test2")));
   }
 
   @Test
-  public void unresponsiveRemoteProduces404() throws Exception {
-    deleteRepository(hostedRepo);
-
-    final HttpResponse httpResponse = proxyClient.get(TEST_PATH);
+  public void emptyMembersReturn404() throws Exception {
+    HttpResponse httpResponse = groupClient.get(TEST_PATH);
     assertThat(httpResponse.getStatusLine().getStatusCode(), is(HttpStatus.NOT_FOUND));
   }
 
   @Test
-  public void responsiveRemoteProduces404() throws Exception {
-    final HttpResponse httpResponse = proxyClient.get(TEST_PATH);
-    assertThat(httpResponse.getStatusLine().getStatusCode(), is(HttpStatus.NOT_FOUND));
+  public void memberContentIsFound() throws Exception {
+    File testFile = resolveTestFile(TEST_CONTENT);
+    hosted1.put(TEST_PATH, testFile);
+
+    assertThat(groupClient.getBytes(TEST_PATH), is(Files.toByteArray(testFile)));
   }
 
   @Test
-  public void fetchFromRemote() throws Exception {
-    final File testFile = resolveTestFile(TEST_CONTENT);
-    hostedClient.put(TEST_PATH, testFile);
+  public void firstSuccessfulResponseWins() throws Exception {
+    File testFile = resolveTestFile(TEST_CONTENT);
+    hosted1.put(TEST_PATH, testFile);
+    hosted2.put(TEST_PATH, resolveTestFile(TEST_CONTENT2));
 
-    final HttpResponse httpResponse = proxyClient.get(TEST_PATH);
-
-    final byte[] bytes = proxyClient.getBytes(TEST_PATH);
-    assertThat(bytes, is(Files.toByteArray(testFile)));
+    assertThat(groupClient.getBytes(TEST_PATH), is(Files.toByteArray(testFile)));
   }
 
   @Test
-  public void notFoundCaches404() throws Exception {
-    // Ask for a nonexistent file
-    proxyClient.get(TEST_PATH);
+  public void earlyFailuresAreBypassed() throws Exception {
+    File testFile = resolveTestFile(TEST_CONTENT);
 
-    // Put the file in the hosted repo
-    hostedClient.put(TEST_PATH, resolveTestFile(TEST_CONTENT));
+    // Only the second repository has any content
+    hosted2.put(TEST_PATH, resolveTestFile(TEST_CONTENT));
 
-    // The NFC should ensure we still see the 404
-    final HttpResponse httpResponse = proxyClient.get(TEST_PATH);
-    assertThat(httpResponse.getStatusLine().getStatusCode(), is(HttpStatus.NOT_FOUND));
+    assertThat(groupClient.getBytes(TEST_PATH), is(Files.toByteArray(testFile)));
   }
 }
