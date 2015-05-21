@@ -69,9 +69,7 @@ public class NugetClient
 
     put.setEntity(reqEntity.build());
 
-    final HttpResponse execute = httpClient.execute(put, httpClientContext);
-
-    return execute.getStatusLine().getStatusCode();
+    return status(httpClient.execute(put, httpClientContext));
   }
 
   public String feedXml(final String query) throws IOException {
@@ -101,15 +99,10 @@ public class NugetClient
 
   /**
    * Issues a delete request to the NuGet repository.
-   *
-   * @return HTTP status code
    */
-  public int delete(final String packageId, final String version) throws IOException {
+  public HttpResponse delete(final String packageId, final String version) throws IOException {
     final URI deleteURI = repositoryBaseUri.resolve(String.format("%s/%s", packageId, version));
     final HttpDelete delete = new HttpDelete(deleteURI);
-    final HttpResponse response = execute(delete);
-    return response.getStatusLine().getStatusCode();
+    return execute(delete);
   }
-
-
 }

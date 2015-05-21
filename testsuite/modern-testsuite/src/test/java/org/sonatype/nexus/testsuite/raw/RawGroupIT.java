@@ -13,6 +13,7 @@ import org.ops4j.pax.exam.spi.reactors.PerClass;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.sonatype.nexus.testsuite.repository.FormatClientSupport.status;
 
 /**
  * IT for group raw repositories
@@ -41,12 +42,18 @@ public class RawGroupIT
     groupClient = client(createRepository(groupConfig("raw-group", "raw-hosted-test1", "raw-hosted-test2")));
   }
 
+  /**
+   * When the membersdon't contain any content, requests to the group return 404.
+   */
   @Test
   public void emptyMembersReturn404() throws Exception {
     HttpResponse httpResponse = groupClient.get(TEST_PATH);
-    assertThat(httpResponse.getStatusLine().getStatusCode(), is(HttpStatus.NOT_FOUND));
+    assertThat(status(httpResponse), is(HttpStatus.NOT_FOUND));
   }
 
+  /**
+   * When a member does contain content, that's returned.
+   */
   @Test
   public void memberContentIsFound() throws Exception {
     File testFile = resolveTestFile(TEST_CONTENT);
@@ -55,6 +62,9 @@ public class RawGroupIT
     assertThat(groupClient.getBytes(TEST_PATH), is(Files.toByteArray(testFile)));
   }
 
+  /**
+   * The group consults members in order, returning the first success.
+   */
   @Test
   public void firstSuccessfulResponseWins() throws Exception {
     File testFile = resolveTestFile(TEST_CONTENT);
@@ -64,6 +74,9 @@ public class RawGroupIT
     assertThat(groupClient.getBytes(TEST_PATH), is(Files.toByteArray(testFile)));
   }
 
+  /**
+   * Members that return failure responses are ignored in favor of successful ones.
+   */
   @Test
   public void earlyFailuresAreBypassed() throws Exception {
     File testFile = resolveTestFile(TEST_CONTENT);

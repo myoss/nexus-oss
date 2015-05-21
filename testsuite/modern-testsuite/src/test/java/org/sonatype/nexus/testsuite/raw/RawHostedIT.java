@@ -9,13 +9,13 @@ import org.sonatype.nexus.repository.raw.internal.RawHostedRecipe;
 import org.sonatype.nexus.repository.storage.WritePolicy;
 
 import com.google.common.io.Files;
-import org.apache.http.HttpResponse;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.sonatype.nexus.testsuite.repository.FormatClientSupport.status;
 
 /**
  * IT for hosted raw repositories
@@ -46,20 +46,8 @@ public class RawHostedIT
 
     assertThat(bytes, is(Files.toByteArray(testFile)));
 
-    int deleteStatus = rawClient.delete(path);
-    assertThat(deleteStatus, is(HttpStatus.NO_CONTENT));
+    assertThat(status(rawClient.delete(path)), is(HttpStatus.NO_CONTENT));
 
-    final HttpResponse httpResponse = rawClient.get(path);
-    assertThat("content should be deleted", httpResponse.getStatusLine().getStatusCode(), is(HttpStatus.NOT_FOUND));
-  }
-
-  @NotNull
-  protected Configuration hostedConfig(final String name) {
-    final Configuration config = new Configuration();
-    config.setRepositoryName(name);
-    config.setRecipeName(RawHostedRecipe.NAME);
-    config.setOnline(true);
-    config.attributes("storage").set("writePolicy", WritePolicy.ALLOW.toString());
-    return config;
+    assertThat("content should be deleted", status(rawClient.get(path)), is(HttpStatus.NOT_FOUND));
   }
 }

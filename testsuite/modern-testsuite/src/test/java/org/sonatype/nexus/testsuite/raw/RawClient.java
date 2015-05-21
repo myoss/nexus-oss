@@ -37,20 +37,17 @@ public class RawClient
     HttpPut put = new HttpPut(repositoryBaseUri.resolve(path));
     put.setEntity(EntityBuilder.create().setFile(file).build());
 
-    final HttpResponse response = this.execute(put);
-    return response.getStatusLine().getStatusCode();
+    return status(execute(put));
   }
 
   public byte[] getBytes(final String path) throws Exception {
     final HttpResponse httpResponse = get(path);
     checkState(httpResponse.getEntity() != null);
 
-    final byte[] bytes = EntityUtils.toByteArray(httpResponse.getEntity());
-    return bytes;
+    return EntityUtils.toByteArray(httpResponse.getEntity());
   }
 
-  public int delete(final String path) throws Exception {
-    final HttpResponse response = execute(new HttpDelete(resolve(path)));
-    return response.getStatusLine().getStatusCode();
+  public HttpResponse delete(final String path) throws Exception {
+    return execute(new HttpDelete(resolve(path)));
   }
 }

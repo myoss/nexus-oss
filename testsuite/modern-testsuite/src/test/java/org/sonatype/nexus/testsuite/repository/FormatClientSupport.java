@@ -37,7 +37,7 @@ public class FormatClientSupport
   }
 
   protected String asString(final HttpResponse response) throws IOException {
-    assert response.getStatusLine().getStatusCode() == HttpStatus.OK;
+    assert status(response) == HttpStatus.OK;
     final String asString = EntityUtils.toString(response.getEntity());
 
     String synopsis = asString.substring(0, Math.min(asString.length(), 60));
@@ -56,15 +56,21 @@ public class FormatClientSupport
     return execute(get);
   }
 
-  @NotNull
-  protected URI resolve(final String path) {
-    return repositoryBaseUri.resolve(path);
-  }
 
   protected HttpResponse execute(final HttpUriRequest request) throws IOException {
     log.info("Requesting {}", request);
     final HttpResponse response = httpClient.execute(request, httpClientContext);
     log.info("Received {}", response);
     return response;
+  }
+
+  @NotNull
+  protected URI resolve(final String path) {
+    return repositoryBaseUri.resolve(path);
+  }
+
+  public static int status(HttpResponse response) {
+    checkNotNull(response);
+    return response.getStatusLine().getStatusCode();
   }
 }

@@ -16,6 +16,7 @@ import org.ops4j.pax.exam.spi.reactors.PerClass;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.sonatype.nexus.testsuite.repository.FormatClientSupport.status;
 
 /**
  * IT for proxy raw repositories
@@ -48,14 +49,12 @@ public class RawProxyOfHostedIT
   public void unresponsiveRemoteProduces404() throws Exception {
     deleteRepository(hostedRepo);
 
-    final HttpResponse httpResponse = proxyClient.get(TEST_PATH);
-    assertThat(httpResponse.getStatusLine().getStatusCode(), is(HttpStatus.NOT_FOUND));
+    assertThat(status(proxyClient.get(TEST_PATH)), is(HttpStatus.NOT_FOUND));
   }
 
   @Test
   public void responsiveRemoteProduces404() throws Exception {
-    final HttpResponse httpResponse = proxyClient.get(TEST_PATH);
-    assertThat(httpResponse.getStatusLine().getStatusCode(), is(HttpStatus.NOT_FOUND));
+    assertThat(status(proxyClient.get(TEST_PATH)), is(HttpStatus.NOT_FOUND));
   }
 
   @Test
@@ -76,7 +75,6 @@ public class RawProxyOfHostedIT
     hostedClient.put(TEST_PATH, resolveTestFile(TEST_CONTENT));
 
     // The NFC should ensure we still see the 404
-    final HttpResponse httpResponse = proxyClient.get(TEST_PATH);
-    assertThat(httpResponse.getStatusLine().getStatusCode(), is(HttpStatus.NOT_FOUND));
+    assertThat(status(proxyClient.get(TEST_PATH)), is(HttpStatus.NOT_FOUND));
   }
 }
