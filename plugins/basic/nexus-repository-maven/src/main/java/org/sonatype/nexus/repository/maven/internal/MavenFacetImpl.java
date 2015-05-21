@@ -13,7 +13,6 @@
 package org.sonatype.nexus.repository.maven.internal;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Date;
 import java.util.Map;
 
@@ -25,6 +24,7 @@ import javax.validation.constraints.NotNull;
 import javax.validation.groups.Default;
 
 import org.sonatype.nexus.blobstore.api.Blob;
+import org.sonatype.nexus.common.collect.AttributesMap;
 import org.sonatype.nexus.common.collect.NestedAttributesMap;
 import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.repository.FacetSupport;
@@ -38,6 +38,7 @@ import org.sonatype.nexus.repository.maven.MavenPath.HashType;
 import org.sonatype.nexus.repository.maven.MavenPathParser;
 import org.sonatype.nexus.repository.maven.policy.VersionPolicy;
 import org.sonatype.nexus.repository.storage.Asset;
+import org.sonatype.nexus.repository.storage.AssetBlob;
 import org.sonatype.nexus.repository.storage.Bucket;
 import org.sonatype.nexus.repository.storage.Component;
 import org.sonatype.nexus.repository.storage.StorageFacet;
@@ -232,15 +233,29 @@ public class MavenFacetImpl
       throws IOException, InvalidContentException
   {
     log.debug("PUT {} : {}", getRepository().getName(), path.getPath());
+    final AssetBlob assetBlob = tx.createBlob(
+        path.getPath(),
+        payload.openInputStream(),
+        HashType.ALGORITHMS,
+        null,
+        payload.getContentType()
+    );
+    AttributesMap contentAttributes = null;
+    if (payload instanceof Content) {
+      contentAttributes = ((Content) payload).getAttributes();
+    }
     if (path.getCoordinates() != null) {
-      return putArtifact(tx, path, payload);
+      return putArtifact(tx, path, assetBlob, contentAttributes);
     }
     else {
-      return putFile(tx, path, payload);
+      return putFile(tx, path, assetBlob, contentAttributes);
     }
   }
 
-  private Content putArtifact(final StorageTx tx, final MavenPath path, final Payload payload)
+  private Content putArtifact(final StorageTx tx,
+                              final MavenPath path,
+                              final AssetBlob assetBlob,
+                              @Nullable final AttributesMap contentAttributes)
       throws IOException, InvalidContentException
   {
     final Coordinates coordinates = checkNotNull(path.getCoordinates());
@@ -279,12 +294,15 @@ public class MavenFacetImpl
       assetAttributes.set(P_EXTENSION, coordinates.getExtension());
     }
 
-    putAssetPayload(path, tx, asset, payload);
+    putAssetPayload(tx, asset, assetBlob, contentAttributes);
     tx.saveAsset(asset);
     return toContent(tx, asset);
   }
 
-  private Content putFile(final StorageTx tx, final MavenPath path, final Payload payload)
+  private Content putFile(final StorageTx tx,
+                          final MavenPath path,
+                          final AssetBlob assetBlob,
+                          @Nullable final AttributesMap contentAttributes)
       throws IOException, InvalidContentException
   {
     Asset asset = findAsset(tx, tx.getBucket(), path);
@@ -297,28 +315,26 @@ public class MavenFacetImpl
       assetAttributes.set(P_ASSET_KEY, getAssetKey(path));
     }
 
-    putAssetPayload(path, tx, asset, payload);
+    putAssetPayload(tx, asset, assetBlob, contentAttributes);
     tx.saveAsset(asset);
     return toContent(tx, asset);
   }
 
-  private void putAssetPayload(final MavenPath path,
-                               final StorageTx tx,
+  private void putAssetPayload(final StorageTx tx,
                                final Asset asset,
-                               final Payload payload) throws IOException
+                               final AssetBlob assetBlob,
+                               @Nullable final AttributesMap contentAttributes)
+      throws IOException
   {
-    try (InputStream inputStream = payload.openInputStream()) {
-      tx.setBlob(asset, path.getPath(), inputStream, HashType.ALGORITHMS, null, payload.getContentType());
-    }
+    tx.attachBlob(asset, assetBlob);
 
     final NestedAttributesMap formatAttributes = asset.formatAttributes();
-    if (payload instanceof Content) {
-      Content content = (Content) payload;
-      final DateTime lastModified = content.getAttributes().get(Content.CONTENT_LAST_MODIFIED, DateTime.class);
+    if (contentAttributes != null) {
+      final DateTime lastModified = contentAttributes.get(Content.CONTENT_LAST_MODIFIED, DateTime.class);
       if (lastModified != null) {
         formatAttributes.set(P_CONTENT_LAST_MODIFIED, lastModified.toDate());
       }
-      formatAttributes.set(P_CONTENT_ETAG, content.getAttributes().get(Content.CONTENT_ETAG, String.class));
+      formatAttributes.set(P_CONTENT_ETAG, contentAttributes.get(Content.CONTENT_ETAG, String.class));
     }
     else {
       formatAttributes.set(P_CONTENT_LAST_MODIFIED, DateTime.now().toDate());
