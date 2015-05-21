@@ -23,6 +23,8 @@ import org.sonatype.nexus.blobstore.api.Blob;
 import org.sonatype.nexus.common.hash.HashAlgorithm;
 import org.sonatype.nexus.repository.FacetSupport;
 import org.sonatype.nexus.repository.InvalidContentException;
+import org.sonatype.nexus.repository.config.Configuration;
+import org.sonatype.nexus.repository.config.ConfigurationFacet;
 import org.sonatype.nexus.repository.raw.RawContent;
 import org.sonatype.nexus.repository.storage.Asset;
 import org.sonatype.nexus.repository.storage.Bucket;
@@ -30,6 +32,7 @@ import org.sonatype.nexus.repository.storage.Component;
 import org.sonatype.nexus.repository.storage.StorageFacet;
 import org.sonatype.nexus.repository.storage.StorageTx;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
 import org.joda.time.DateTime;
 
@@ -49,6 +52,36 @@ public class RawContentFacetImpl
     implements RawContentFacet
 {
   private final static List<HashAlgorithm> hashAlgorithms = Lists.newArrayList(MD5, SHA1);
+
+  @VisibleForTesting
+  static final String CONFIG_KEY = "rawContent";
+
+  @VisibleForTesting
+  static class Config
+  {
+    @Override
+    public String toString() {
+      return getClass().getSimpleName() + "{}";
+    }
+  }
+
+  private Config config;
+
+  @Override
+  protected void doValidate(final Configuration configuration) throws Exception {
+    facet(ConfigurationFacet.class).validateSection(configuration, CONFIG_KEY, Config.class);
+  }
+
+  @Override
+  protected void doConfigure(final Configuration configuration) throws Exception {
+    config = facet(ConfigurationFacet.class).readSection(configuration, CONFIG_KEY, Config.class);
+    log.debug("Config: {}", config);
+  }
+
+  @Override
+  protected void doDestroy() throws Exception {
+    config = null;
+  }
 
   @Nullable
   @Override
