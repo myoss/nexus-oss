@@ -56,6 +56,9 @@ public class RawContentFacetImpl
   @VisibleForTesting
   static final String CONFIG_KEY = "rawContent";
 
+  // TODO: raw config is empty, is here only to have this bundle haveg Import-Package org.sonatype.nexus.repository.config
+  // TODO: as FacetSupport subclass depends on it. Actually, this facet does not need any kind of configuration
+  // TODO: it's here only to circumvent this OSGi/maven-bundle-plugin issue.
   @VisibleForTesting
   static class Config
   {
