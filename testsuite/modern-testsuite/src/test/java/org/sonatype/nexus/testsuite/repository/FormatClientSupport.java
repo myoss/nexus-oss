@@ -29,7 +29,7 @@ import org.jetbrains.annotations.NotNull;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
- * @since 3.0
+ * Support class for HTTP-based repository test clients.
  */
 public class FormatClientSupport
     extends ComponentSupport
