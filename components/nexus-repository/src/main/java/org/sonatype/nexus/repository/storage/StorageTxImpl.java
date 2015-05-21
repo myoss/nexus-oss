@@ -459,6 +459,7 @@ public class StorageTxImpl
   {
     checkNotNull(asset);
     checkNotNull(assetBlob);
+    checkArgument(!assetBlob.isAttached(), "Asset to attach is already attached");
 
     final WritePolicy effectiveWritePolicy = writePolicySelector.select(asset, writePolicy);
     if (effectiveWritePolicy == WritePolicy.DENY) {

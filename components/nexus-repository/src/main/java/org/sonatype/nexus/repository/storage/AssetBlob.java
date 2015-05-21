@@ -21,6 +21,7 @@ import org.sonatype.nexus.common.hash.HashAlgorithm;
 
 import com.google.common.hash.HashCode;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
@@ -52,28 +53,50 @@ public class AssetBlob
     this.attached = false;
   }
 
+  /**
+   * Returns {@code true} if this instance is attached to an {@link Asset}. If {@code false} returned, the blob
+   * referenced by this instance is considered "orphan" and will be deleted at the end of TX (whatever outcome is,
+   * commit or rollback).
+   */
   boolean isAttached() {
     return attached;
   }
 
+  /**
+   * Set's the attached state or this instance. Only can be invoked once, while this instance is not attached.
+   */
   void setAttached(final boolean attached) {
+    checkArgument(!this.attached, "Already attached");
     this.attached = attached;
   }
 
+  /**
+   * The BLOB reference this instance is pointing to.
+   */
   @Nonnull
   public BlobRef getBlobRef() {
     return blobRef;
   }
 
+  /**
+   * The BLOB size in bytes.
+   */
   public long getSize() {
     return size;
   }
 
+  /**
+   * The content-type that BLOB contains.
+   */
   @Nonnull
   public String getContentType() {
     return contentType;
   }
 
+  /**
+   * Exact hashes calculated by storage subsystem, while blob got saved into blob store ("exact", as they were just
+   * calculated during streaming operations).
+   */
   @Nonnull
   public Map<HashAlgorithm, HashCode> getHashes() {
     return hashes;
