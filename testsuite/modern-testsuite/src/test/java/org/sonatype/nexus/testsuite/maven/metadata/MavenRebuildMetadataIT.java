@@ -69,7 +69,6 @@ public class MavenRebuildMetadataIT
 
     // mvnDeploy did happen, let's corrupt some of those
     write(mavenSnapshots, gMetadataPath, new StringPayload("rubbish", Maven2Format.METADATA_CONTENT_TYPE));
-    write(mavenSnapshots, gMetadataPath + ".sha1", new StringPayload("aaa", Maven2Format.CHECKSUM_CONTENT_TYPE));
 
     mavenHostedFacet.rebuildMetadata(null, null, null);
 
@@ -98,7 +97,6 @@ public class MavenRebuildMetadataIT
 
     // mvnDeploy did happen, let's corrupt some of those
     write(mavenSnapshots, gMetadataPath, new StringPayload("rubbish", Maven2Format.METADATA_CONTENT_TYPE));
-    write(mavenSnapshots, gMetadataPath + ".sha1", new StringPayload("aaa", Maven2Format.CHECKSUM_CONTENT_TYPE));
 
     mavenHostedFacet.rebuildMetadata("org.sonatype.nexus.testsuite", null, null); // testproject groupId!
 
