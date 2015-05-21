@@ -12,6 +12,7 @@
  */
 package org.sonatype.nexus.repository.storage;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
@@ -208,16 +209,31 @@ public interface StorageTx
   void deleteBucket(Bucket bucket);
 
   /**
-   * Creates a new Blob.
-   */
-  BlobRef createBlob(InputStream inputStream, Map<String, String> headers);
-
-  /**
    * Creates a new Blob and updates the given asset with a reference to it, hash metadata, size, and content type.
    * The old blob, if any, will be deleted.
    */
-  BlobRef setBlob(InputStream inputStream, Map<String, String> headers, Asset asset,
-                  Iterable<HashAlgorithm> hashAlgorithms, String contentType);
+  BlobRef setBlob(Asset asset,
+                  String blobNameHint,
+                  InputStream inputStream,
+                  Iterable<HashAlgorithm> hashAlgorithms,
+                  @Nullable Map<String, String> headers,
+                  @Nullable String declaredContentType);
+
+  /**
+   * Creates a new Blob and returns it's {@link AssetBlob}. Blobs created but not attached in a scope of a TX to any
+   * asset are considered as "orphans", and they will be deleted from blob store at the end of a TX.
+   */
+  AssetBlob createBlob(String blobNameHint,
+                       InputStream inputStream,
+                       Iterable<HashAlgorithm> hashAlgorithms,
+                       @Nullable Map<String, String> headers,
+                       @Nullable String declaredContentType) throws IOException;
+
+  /**
+   * Attaches a Blob to asset and updates the given asset with a reference to it, hash metadata, size, and content
+   * type. The asset's old blob, if any, will be deleted.
+   */
+  void attachBlob(Asset asset, AssetBlob assetBlob);
 
   /**
    * Gets a Blob, or {@code null if not found}.
