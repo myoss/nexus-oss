@@ -36,10 +36,11 @@ public interface ContentValidator
    * @param strictContentTypeValidation whether the check should be strict or not.
    * @param contentSupplier             the supplier of the content to determine or confirm content type.
    * @param contentNameHint             a "hint" for content name, usually a file path or file name or just extension
-   *                                    (file extension used).
-   * @param declaredContentType         if non-null, the declared content type to confirm, if null, this method will try
-   *                                    to determine the content type.
+   *                                    (file extension is used).
+   * @param declaredContentType         if non-null, the declared content type will be confirmed, if null, this method
+   *                                    will attempt to determine the content type.
    * @return the content type of the content.
+   * @throws InvalidContentException if type cannot be confirmed or detected.
    */
   @Nonnull
   String determineContentType(boolean strictContentTypeValidation,

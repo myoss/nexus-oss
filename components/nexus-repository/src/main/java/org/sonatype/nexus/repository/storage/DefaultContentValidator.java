@@ -61,7 +61,7 @@ public class DefaultContentValidator
     String contentType = declaredContentType;
 
     if (contentType == null) {
-      log.trace("Content PUT to {} has no content type.", contentNameHint);
+      log.trace("Content {} has no declared content type.", contentNameHint);
       try (InputStream is = contentSupplier.get()) {
         contentType = mimeSupport.detectMimeType(is, contentNameHint);
       }
