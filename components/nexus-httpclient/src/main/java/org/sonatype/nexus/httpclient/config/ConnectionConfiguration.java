@@ -16,6 +16,8 @@ import javax.annotation.Nullable;
 
 import org.sonatype.sisu.goodies.common.Time;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
 /**
  * Connection configuration.
  *
@@ -25,6 +27,7 @@ public class ConnectionConfiguration
     implements Cloneable
 {
   @Nullable
+  @JsonDeserialize(using=TimeoutConfigurationDeserializer.class)
   private Time timeout;
 
   @Nullable
