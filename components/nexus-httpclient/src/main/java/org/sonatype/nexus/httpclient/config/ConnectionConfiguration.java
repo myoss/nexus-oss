@@ -14,6 +14,8 @@ package org.sonatype.nexus.httpclient.config;
 
 import javax.annotation.Nullable;
 
+import org.sonatype.sisu.goodies.common.Time;
+
 /**
  * Connection configuration.
  *
@@ -23,7 +25,7 @@ public class ConnectionConfiguration
     implements Cloneable
 {
   @Nullable
-  private Integer timeout;
+  private Time timeout;
 
   @Nullable
   private Integer maximumRetries;
@@ -37,11 +39,11 @@ public class ConnectionConfiguration
   private Boolean useTrustStore;
 
   @Nullable
-  public Integer getTimeout() {
+  public Time getTimeout() {
     return timeout;
   }
 
-  public void setTimeout(@Nullable final Integer timeout) {
+  public void setTimeout(@Nullable final Time timeout) {
     this.timeout = timeout;
   }
 
