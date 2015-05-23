@@ -43,7 +43,6 @@ import org.sonatype.nexus.ldap.internal.ssl.SSLLdapContextFactory
 import org.sonatype.nexus.ldap.internal.templates.LdapSchemaTemplate
 import org.sonatype.nexus.ldap.internal.templates.LdapSchemaTemplateManager
 import org.sonatype.nexus.rapture.PasswordPlaceholder
-import org.sonatype.nexus.rapture.TrustStoreKeys
 import org.sonatype.nexus.validation.Validate
 import org.sonatype.nexus.validation.group.Create
 import org.sonatype.nexus.validation.group.Update
@@ -82,10 +81,6 @@ extends DirectComponentSupport
 
   @Inject
   TrustStore trustStore
-
-  @Inject
-  @Nullable
-  TrustStoreKeys trustStoreKeys
 
   @Inject
   Validator validator
