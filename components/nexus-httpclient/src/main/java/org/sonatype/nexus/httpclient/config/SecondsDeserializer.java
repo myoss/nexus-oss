@@ -21,17 +21,15 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 
 /**
- * {@link ConnectionConfiguration#timeout} deserializer.
- *
- * Considers timeout value as seconds.
+ * {@link Time} in seconds deserializer.
  *
  * @since 3.0
  */
-public class TimeoutConfigurationDeserializer
+public class SecondsDeserializer
     extends StdDeserializer<Time>
 {
 
-  public TimeoutConfigurationDeserializer() {
+  public SecondsDeserializer() {
     super(Time.class);
   }
 

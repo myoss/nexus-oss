@@ -27,7 +27,7 @@ public class ConnectionConfiguration
     implements Cloneable
 {
   @Nullable
-  @JsonDeserialize(using=TimeoutConfigurationDeserializer.class)
+  @JsonDeserialize(using = SecondsDeserializer.class)
   private Time timeout;
 
   @Nullable
