@@ -114,6 +114,9 @@ public final class Connection
    */
   private Host host;
 
+  @Nullable
+  private Boolean useTrustStore;
+
   /**
    * SASL Realm. The authentication realm.
    */
@@ -175,6 +178,15 @@ public final class Connection
   public void setHost(final Host host) {
     checkArgument(host != null, "host null");
     this.host = host;
+  }
+
+  @Nullable
+  public Boolean getUseTrustStore() {
+    return useTrustStore;
+  }
+
+  public void setUseTrustStore(@Nullable final Boolean useTrustStore) {
+    this.useTrustStore = useTrustStore;
   }
 
   public String getSaslRealm() {
