@@ -41,6 +41,7 @@ import org.sonatype.nexus.ldap.internal.connector.dao.NoSuchLdapUserException;
 import org.sonatype.nexus.ldap.internal.events.LdapClearCacheEvent;
 import org.sonatype.nexus.ldap.internal.persist.LdapConfigurationManager;
 import org.sonatype.nexus.ldap.internal.persist.LdapServerNotFoundException;
+import org.sonatype.nexus.ldap.internal.persist.entity.Connection;
 import org.sonatype.nexus.ldap.internal.persist.entity.Connection.Protocol;
 import org.sonatype.nexus.ldap.internal.persist.entity.LdapConfiguration;
 import org.sonatype.nexus.ldap.internal.ssl.SSLLdapContextFactory;
@@ -322,18 +323,18 @@ public class EnterpriseLdapManager
   {
     final DefaultLdapContextFactory ldapContextFactory = LdapConnectionUtils.getLdapContextFactory(ldapServer);
     final String serverId = ldapServer.getId() == null ? "<unknown>" : ldapServer.getId();
-    if (Protocol.ldaps == ldapServer.getConnection().getHost().getProtocol()
-        && Boolean.TRUE.equals(ldapServer.getConnection().getUseTrustStore())) {
+    Connection connection = ldapServer.getConnection();
+    if (Protocol.ldaps == connection.getHost().getProtocol() && connection.getUseTrustStore()) {
       final SSLContext sslContext = trustStore.getSSLContext();
       log.debug(
           "{} is using a Nexus SSL Trust Store for accessing {}",
-          serverId, ldapServer.getConnection().getHost().getHostName()
+          serverId, connection.getHost().getHostName()
       );
       return new SSLLdapContextFactory(sslContext, ldapContextFactory);
     }
     log.debug(
         "{} is using a JVM Trust Store for accessing {}",
-        serverId, ldapServer.getConnection().getHost().getHostName()
+        serverId, connection.getHost().getHostName()
     );
     return ldapContextFactory;
   }

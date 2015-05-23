@@ -322,7 +322,7 @@ extends DirectComponentSupport
         name: ldapServerXO.name,
         connection: new Connection(
             host: new Host(Protocol.valueOf(ldapServerXO.protocol.name()), ldapServerXO.host, ldapServerXO.port),
-            useTrustStore: ldapServerXO.useTrustStore,
+            useTrustStore: Boolean.TRUE.equals(ldapServerXO.useTrustStore),
             searchBase: ldapServerXO.searchBase,
 
             authScheme: ldapServerXO.authScheme,

@@ -114,8 +114,7 @@ public final class Connection
    */
   private Host host;
 
-  @Nullable
-  private Boolean useTrustStore;
+  private boolean useTrustStore;
 
   /**
    * SASL Realm. The authentication realm.
@@ -180,8 +179,7 @@ public final class Connection
     this.host = host;
   }
 
-  @Nullable
-  public Boolean getUseTrustStore() {
+  public boolean getUseTrustStore() {
     return useTrustStore;
   }
 
